@@ -106,6 +106,7 @@ func (file *TestFile) getTestProviderOrMock(addr string) (*Provider, bool) {
 			AliasRange:        mockProvider.AliasRange,
 			DeclRange:         mockProvider.DeclRange,
 			IsMocked:          true,
+			IgnoreMocks:       mockProvider.IgnoreMocks,
 			MockResources:     mockProvider.MockResources,
 			OverrideResources: mockProvider.OverrideResources,
 		}
@@ -318,7 +319,7 @@ type MockProvider struct {
 	DeclRange hcl.Range
 
 	// Fields below are specific to configs.MockProvider:
-
+	IgnoreMocks       []string
 	MockResources     []*MockResource
 	OverrideResources []*OverrideResource
 }
@@ -921,7 +922,10 @@ func decodeMockProviderBlock(block *hcl.Block) (*MockProvider, hcl.Diagnostics) 
 			})
 		}
 	}
-
+	if attr, exists := content.Attributes["mock_ignore"]; exists {
+		valDiags := gohcl.DecodeExpression(attr.Expr, nil, &provider.IgnoreMocks)
+		diags = append(diags, valDiags...)
+	}
 	for _, block := range content.Blocks {
 		switch block.Type {
 		case blockNameMockData, blockNameMockResource:
@@ -1169,6 +1173,10 @@ var mockProviderBlockSchema = &hcl.BodySchema{
 	Attributes: []hcl.AttributeSchema{
 		{
 			Name:     "alias",
+			Required: false,
+		},
+		{
+			Name:     "mock_ignore",
 			Required: false,
 		},
 	},

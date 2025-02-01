@@ -44,6 +44,7 @@ type Provider struct {
 	// IsMocked indicates if this provider has been mocked. It is used in
 	// testing framework to instantiate test provider wrapper.
 	IsMocked          bool
+	IgnoreMocks       []string
 	MockResources     []*MockResource
 	OverrideResources []*OverrideResource
 
